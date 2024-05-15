@@ -4,7 +4,7 @@ from .solver import Solver
 import time
 import argparse
 
-EXAMPLE_PATH = 'data/nono3.txt'
+EXAMPLE_PATH = 'examples/complicated.non'
 
 class Simulation:
     def __init__(self, args: argparse.ArgumentParser) -> None:

@@ -8,11 +8,11 @@ class Solver:
         
         print(f'{self.simulation.nonogram}')
 
-        for row in self.simulation.nonogram.row_values:
-            possible_row_solutions.append(self._get_vector_solutions_(row, self.simulation.nonogram.cols))
+        for row in self.simulation.nonogram.rows:
+            possible_row_solutions.append(self._get_vector_solutions_(row, self.simulation.nonogram.width))
 
-        for col in self.simulation.nonogram.col_values:
-            possible_col_solutions.append(self._get_vector_solutions_(col, self.simulation.nonogram.rows))
+        for col in self.simulation.nonogram.columns:
+            possible_col_solutions.append(self._get_vector_solutions_(col, self.simulation.nonogram.height))
 
         iteration = 0
         while not self._is_simulation_solved_():
@@ -79,14 +79,14 @@ class Solver:
 
     def _is_simulation_solved_(self):
         for i, row in enumerate(self.simulation.nonogram.solution):
-            validity = self._check_vector_validity_(row, self.simulation.nonogram.row_values[i])
+            validity = self._check_vector_validity_(row, self.simulation.nonogram.rows[i])
             if not validity:
                 #print(f'INVALID: row {i}')
                 return False
             
-        for i in range(self.simulation.nonogram.cols):
+        for i in range(self.simulation.nonogram.width):
             vector = [item[i] for item in self.simulation.nonogram.solution]
-            validity = self._check_vector_validity_(vector, self.simulation.nonogram.col_values[i])
+            validity = self._check_vector_validity_(vector, self.simulation.nonogram.columns[i])
             if not validity:
                 #print(f'INVALID: col {i}')
                 return False
