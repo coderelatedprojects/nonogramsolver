@@ -6,7 +6,7 @@ class Solver:
         possible_row_solutions = []
         possible_col_solutions = []
         
-        print(f'{self.simulation.nonogram}')
+        #print(f'{self.simulation.nonogram}')
 
         for row in self.simulation.nonogram.rows:
             possible_row_solutions.append(self._get_vector_solutions_(row, self.simulation.nonogram.width))
@@ -33,10 +33,11 @@ class Solver:
                 for j, item in enumerate(common_col):
                     if item != 0: self.simulation.nonogram.solution[j][i] = item
 
-            print('===========================================')
-            print(f'iteration: {iteration}')
-            print(self.simulation.nonogram)
+            #print('===========================================')
+            #print(self.simulation.nonogram)
             iteration += 1
+        
+        print(self.simulation.nonogram)
 
     def _get_vector_solutions_(self, vector_values, length):
        #print(f'{vector_values=}, {length=} => {actual_length=}')

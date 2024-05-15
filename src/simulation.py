@@ -10,7 +10,7 @@ class Simulation:
     def __init__(self, args: argparse.ArgumentParser) -> None:
         filepath = args.filepath if args.filepath else EXAMPLE_PATH
         self.nonogram = FileReader.read_nonogram(filepath)
-        self.solver = Solver(self) #possibility to switch solvers
+        self.solver = Solver(self)
         start_time = time.time()
         self.solve()
         print(f'Solution time: {time.time()-start_time:.4f} s')

@@ -22,7 +22,6 @@ class FileReader(ReaderInterface):
         
         #add error handling and incomplete/impossible puzzle detection
         with open(path, 'r') as reader:
-            print(type(config["rows"]))
             for line in reader:
                 keyword = line.split(' ')[0].strip()
                 if keyword in config.keys():
