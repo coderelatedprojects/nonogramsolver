@@ -1,12 +1,14 @@
+import time
+from typing import List
+
 class Solver:
     def __init__(self, simulation):
         self.simulation = simulation
 
-    def solve(self):
+    def solve(self) -> None:
+        start_time = time.time()
         possible_row_solutions = []
         possible_col_solutions = []
-        
-        #print(f'{self.simulation.nonogram}')
 
         for row in self.simulation.nonogram.rows:
             possible_row_solutions.append(self._get_vector_solutions_(row, self.simulation.nonogram.width))
@@ -16,12 +18,8 @@ class Solver:
 
         iteration = 0
         while not self._is_simulation_solved_():
-            #print(f'ITERATION {iteration}')
-            #print(f'POSSIBLE ROW SOLUTIONS COUNT: {[len(possible_row_solutions[i]) for i in range(len(possible_row_solutions))]}')
-            #print(f'POSSIBLE COL SOLUTIONS COUNT: {[len(possible_col_solutions[i]) for i in range(len(possible_col_solutions))]}')
 
             for i in range(len(possible_row_solutions)):
-                #print(f'{i=} / {len(possible_row_solutions)=}')
                 possible_row_solutions[i] = self._remove_invalid_vector_solutions_(possible_row_solutions[i], self.simulation.nonogram.solution[i])
                 common_row = self._get_common_vector_solution_(possible_row_solutions[i])
                 for j, item in enumerate(common_row):
@@ -33,14 +31,12 @@ class Solver:
                 for j, item in enumerate(common_col):
                     if item != 0: self.simulation.nonogram.solution[j][i] = item
 
-            #print('===========================================')
-            #print(self.simulation.nonogram)
             iteration += 1
         
         print(self.simulation.nonogram)
+        print(f'Solution time: {time.time()-start_time:.4f} s')
 
-    def _get_vector_solutions_(self, vector_values, length):
-       #print(f'{vector_values=}, {length=} => {actual_length=}')
+    def _get_vector_solutions_(self, vector_values: List[int], length: int) -> List[int]:
         actual_length = length - sum(vector_values) + 1
         possible_solutions = []
         
@@ -65,7 +61,7 @@ class Solver:
 
         return possible_solutions
 
-    def _convert_from_binary_solution_(self, binary_solution, vector_values):
+    def _convert_from_binary_solution_(self, binary_solution: str, vector_values: List[int]) -> List[int]:
         i = 0
         solution = []
         for bit in binary_solution:
@@ -75,25 +71,22 @@ class Solver:
                 if i > 0: solution.append(1)
                 solution.extend(2 for j in range(vector_values[i]))
                 i += 1
-        #print(f'converted solution: {solution}')
         return solution
 
-    def _is_simulation_solved_(self):
+    def _is_simulation_solved_(self) -> bool:
         for i, row in enumerate(self.simulation.nonogram.solution):
             validity = self._check_vector_validity_(row, self.simulation.nonogram.rows[i])
             if not validity:
-                #print(f'INVALID: row {i}')
                 return False
             
         for i in range(self.simulation.nonogram.width):
             vector = [item[i] for item in self.simulation.nonogram.solution]
             validity = self._check_vector_validity_(vector, self.simulation.nonogram.columns[i])
             if not validity:
-                #print(f'INVALID: col {i}')
                 return False
         return True
         
-    def _check_vector_validity_(self, vector, vector_values):
+    def _check_vector_validity_(self, vector: List[int], vector_values: List[int]) -> bool:
         current_value_index = 0
         current_filled_streak = 0
         only_zeros = False
@@ -113,7 +106,7 @@ class Solver:
         return all_values_filled
         
 
-    def _get_common_vector_solution_(self, possible_vectors_solutions):
+    def _get_common_vector_solution_(self, possible_vectors_solutions: List[List[int]]) -> List[int]:
         summed_vector = [0 for i in range(len(possible_vectors_solutions[0]))]
         for vector_solution in possible_vectors_solutions:
             summed_vector = [x + y for x, y in zip(summed_vector, vector_solution)]
@@ -129,8 +122,7 @@ class Solver:
 
         return common_vector
     
-    def _remove_invalid_vector_solutions_(self, current_solutions, solution_vector):
-        #print(f'{current_solutions=}, {solution_vector=}')
+    def _remove_invalid_vector_solutions_(self, current_solutions: List[List[int]], solution_vector: List[int]) -> List[List[int]]:
         valid_solutions = []
         for single_solution in current_solutions:
             solution_valid = True

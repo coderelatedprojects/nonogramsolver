@@ -1,4 +1,3 @@
-from .reader import ReaderInterface
 from .nonogram import Nonogram
 
 config = {
@@ -14,11 +13,11 @@ config = {
     "goal" : ""
 }
 
-class FileReader(ReaderInterface):
-    def read_nonogram(path) -> Nonogram:
+class FileReader():
+    @staticmethod
+    def read_nonogram(path: str) -> Nonogram:
         reading_rows = False
         reading_cols = False
-
         
         #add error handling and incomplete/impossible puzzle detection
         with open(path, 'r') as reader:

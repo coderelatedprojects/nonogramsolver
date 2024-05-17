@@ -15,3 +15,4 @@ parser.add_argument('--version', action="version", version="%(prog)s 1.0")
 
 if __name__ == '__main__':
     simulation = Simulation(parser.parse_args())
+    simulation.solve()
