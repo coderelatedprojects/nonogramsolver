@@ -1,39 +1,41 @@
 import time
 from typing import List
+from .nonogram import Nonogram
 
+""" class responsible for solving a nonogram """
 class Solver:
-    def __init__(self, simulation):
-        self.simulation = simulation
+    def __init__(self, nonogram: Nonogram):
+        self.nonogram = nonogram
 
     def solve(self) -> None:
         start_time = time.time()
         possible_row_solutions = []
         possible_col_solutions = []
 
-        for row in self.simulation.nonogram.rows:
-            possible_row_solutions.append(self._get_vector_solutions_(row, self.simulation.nonogram.width))
+        for row in self.nonogram.rows:
+            possible_row_solutions.append(self._get_vector_solutions_(row, self.nonogram.width))
 
-        for col in self.simulation.nonogram.columns:
-            possible_col_solutions.append(self._get_vector_solutions_(col, self.simulation.nonogram.height))
+        for col in self.nonogram.columns:
+            possible_col_solutions.append(self._get_vector_solutions_(col, self.nonogram.height))
 
         iteration = 0
-        while not self._is_simulation_solved_():
+        while not self._is_nonogram_solved_():
 
             for i in range(len(possible_row_solutions)):
-                possible_row_solutions[i] = self._remove_invalid_vector_solutions_(possible_row_solutions[i], self.simulation.nonogram.solution[i])
+                possible_row_solutions[i] = self._remove_invalid_vector_solutions_(possible_row_solutions[i], self.nonogram.solution[i])
                 common_row = self._get_common_vector_solution_(possible_row_solutions[i])
                 for j, item in enumerate(common_row):
-                    if item != 0: self.simulation.nonogram.solution[i][j] = item
+                    if item != 0: self.nonogram.solution[i][j] = item
 
             for i in range(len(possible_col_solutions)):
-                possible_col_solutions[i] = self._remove_invalid_vector_solutions_(possible_col_solutions[i], [item[i] for item in self.simulation.nonogram.solution ])
+                possible_col_solutions[i] = self._remove_invalid_vector_solutions_(possible_col_solutions[i], [item[i] for item in self.nonogram.solution ])
                 common_col = self._get_common_vector_solution_(possible_col_solutions[i])
                 for j, item in enumerate(common_col):
-                    if item != 0: self.simulation.nonogram.solution[j][i] = item
+                    if item != 0: self.nonogram.solution[j][i] = item
 
             iteration += 1
         
-        print(self.simulation.nonogram)
+        print(self.nonogram)
         print(f'Solution time: {time.time()-start_time:.4f} s')
 
     def _get_vector_solutions_(self, vector_values: List[int], length: int) -> List[int]:
@@ -73,15 +75,15 @@ class Solver:
                 i += 1
         return solution
 
-    def _is_simulation_solved_(self) -> bool:
-        for i, row in enumerate(self.simulation.nonogram.solution):
-            validity = self._check_vector_validity_(row, self.simulation.nonogram.rows[i])
+    def _is_nonogram_solved_(self) -> bool:
+        for i, row in enumerate(self.nonogram.solution):
+            validity = self._check_vector_validity_(row, self.nonogram.rows[i])
             if not validity:
                 return False
             
-        for i in range(self.simulation.nonogram.width):
-            vector = [item[i] for item in self.simulation.nonogram.solution]
-            validity = self._check_vector_validity_(vector, self.simulation.nonogram.columns[i])
+        for i in range(self.nonogram.width):
+            vector = [item[i] for item in self.nonogram.solution]
+            validity = self._check_vector_validity_(vector, self.nonogram.columns[i])
             if not validity:
                 return False
         return True
