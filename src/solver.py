@@ -12,26 +12,23 @@ class Solver:
         for i, row in enumerate(nonogram.rows):
             possible_row_solutions.append(self._get_vector_solutions_(row, nonogram.width))
             print(f'preparing row solutions... {i+1}/{nonogram.height} ',end="\r")
-        print(f'\nrow solution finished')
 
         for i, col in enumerate(nonogram.columns):
             possible_col_solutions.append(self._get_vector_solutions_(col, nonogram.height))
             print(f'preparing col solutions... {i+1}/{nonogram.width} ',end="\r")
-        print(f'\ncol solution finished')
 
         iteration = 0
         any_changes = True
         while not self._is_nonogram_solved_(nonogram) or not any_changes:
-            if iteration > 20:
-                break
-
             for i in range(len(possible_row_solutions)):
+                print(f'[{iteration}], row solutions: {i+1}/{len(possible_row_solutions)} -> {len(possible_row_solutions[i])} potential solutions', end="\r")
                 possible_row_solutions[i] = self._remove_invalid_vector_solutions_(possible_row_solutions[i], nonogram.solution[i], nonogram.width)
                 common_row = self._get_common_vector_solution_(possible_row_solutions[i], nonogram.width)
                 for j, item in enumerate(common_row):
                     if item != 2: nonogram.solution[i][j] = item
 
             for i in range(len(possible_col_solutions)):
+                print(f'[{iteration}], col solutions: {i+1}/{len(possible_col_solutions)} -> {len(possible_col_solutions[i])} potential solutions', end="\r")
                 possible_col_solutions[i] = self._remove_invalid_vector_solutions_(possible_col_solutions[i], [item[i] for item in nonogram.solution], nonogram.height)
                 common_col = self._get_common_vector_solution_(possible_col_solutions[i], nonogram.height)
                 for j, item in enumerate(common_col):
@@ -40,7 +37,7 @@ class Solver:
             iteration += 1
             print(f'{iteration=}', end="\r")
 
-        print('')        
+        print('==================================================')        
         print(nonogram)
         print(f'Solution time: {time.time()-start_time:.4f} s')
 
@@ -48,23 +45,9 @@ class Solver:
         actual_length = length - sum(vector_values) + 1
         possible_solutions = []
         
-        outcome_tree = [['0','1']]
-
-        for i in range(1, actual_length):
-            outcome_tree.append([])
-            for combination in outcome_tree[i-1]:
-                new_combination_zero = combination + '0'
-                new_combination_one = combination + '1'
-
-                if i < actual_length - 1:
-                    outcome_tree[i].append(new_combination_zero)
-                    if combination.count('1') < len(vector_values):
-                        outcome_tree[i].append(new_combination_one)
-                else:
-                    if new_combination_zero.count('1') == len(vector_values): outcome_tree[i].append(new_combination_zero)
-                    if new_combination_one.count('1') == len(vector_values): outcome_tree[i].append(new_combination_one)
+        possible_binary_solutions = self._get_all_binary_repr_(actual_length, len(vector_values))
         
-        for binary_solution in outcome_tree[-1]:
+        for binary_solution in possible_binary_solutions:
             possible_solutions.append(self._convert_from_binary_solution_(binary_solution, vector_values))
 
         return possible_solutions
@@ -116,34 +99,44 @@ class Solver:
         
 
     def _get_common_vector_solution_(self, possible_vectors_solutions: List[int], solution_length: int) -> List[int]:
-        summed_vector = [0 for i in range(solution_length)]
-        for vector_solution in possible_vectors_solutions:
-            vector_solution_string = '{0:b}'.format(vector_solution).rjust(solution_length, '0')
-            summed_vector = [x + int(y) for x, y in zip(summed_vector, [*vector_solution_string])]
+        solution = [2 for _ in range(solution_length)]
+        only_ones_int = 2**solution_length-1
+        common_ones = possible_vectors_solutions[0]
+        common_zeroes = only_ones_int ^ possible_vectors_solutions[0]
 
-        common_vector = []
-        for element in summed_vector:
-            if element == 0:
-                common_vector.append(0)
-            elif element == len(possible_vectors_solutions):
-                common_vector.append(1)
-            else:
-                common_vector.append(2)
+        for possible_solution in possible_vectors_solutions:
+            common_ones = common_ones & possible_solution
+            common_zeroes = common_zeroes & (only_ones_int ^ possible_solution)
 
-        return common_vector
+        for i, element in enumerate('{0:b}'.format(common_ones).rjust(solution_length, '0')):
+            if element == '1':
+                solution[i] = 1
+        
+        for i, element in enumerate('{0:b}'.format(common_zeroes).rjust(solution_length, '0')):
+            if element == '1':
+                solution[i] = 0
+        
+        return solution
     
     def _remove_invalid_vector_solutions_(self, current_solutions: List[int], solution_vector: List[int], solution_length: int) -> List[List[int]]:
         valid_solutions = []
+        only_ones_int = 2**solution_length-1
+
+        solution_vector_string = ''.join(str(x) for x in solution_vector)
+        solution_vector_ones = int(solution_vector_string.replace('2', '0'),2)
+        solution_vector_zeroes = only_ones_int ^ int(solution_vector_string.replace('2','1'),2)
+
         for single_solution in current_solutions:
-            solution_valid = True
-            solution_string = '{0:b}'.format(single_solution).rjust(solution_length, '0')
-            #print(f'{solution_string=}')
-            for i, item in enumerate([*solution_string]):
-                if solution_vector[i] != 2 and solution_vector[i] != int(item):
-                    #print(f'{item=}')
-                    #print(f'{solution_vector[i]=}')
-                    solution_valid = False
-                    break
-            if solution_valid:
+            if single_solution & solution_vector_ones == solution_vector_ones and (only_ones_int ^ single_solution) & solution_vector_zeroes == solution_vector_zeroes:
                 valid_solutions.append(single_solution)
         return valid_solutions
+    
+    def _get_all_binary_repr_(self, length, ones):
+        if length == 0:
+            return []
+        elif (length==ones):
+            return ['1' * length]
+        elif (ones==0):
+            return ['0' * length]
+        else: 
+            return ['1' + x for x in self._get_all_binary_repr_(length-1,ones-1)] + ['0' + x for x in self._get_all_binary_repr_(length-1,ones)]

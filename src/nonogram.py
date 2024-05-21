@@ -25,4 +25,4 @@ class Nonogram:
         printing_array = [[BLANK*self.max_value_len if self.max_col_len > len(self.columns[j])+i or j < 0 else str(self.columns[j][i-(self.max_col_len-len(self.columns[j]))]).ljust(self.max_value_len, ' ') for j in range(-self.max_row_len, len(self.columns))] for i in range(self.max_col_len)]
         printing_array.extend([[BLANK*self.max_value_len if -i > len(self.rows[j]) else PRINTING_SYMBOL_MAP.get(self.solution[j][i]).ljust(self.max_value_len, ' ') if i>=0 else str(self.rows[j][i]).ljust(self.max_value_len, ' ') for i in range(-self.max_row_len,self.width)] for j in range(self.height)])
 
-        return '\n'.join(info) + '\n'.join([' '.join(row) for row in printing_array])
+        return '\n'.join(info) + '\n' + '\n'.join([' '.join(row) for row in printing_array])
