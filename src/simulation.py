@@ -10,7 +10,7 @@ class Simulation:
     def __init__(self, args: argparse.ArgumentParser):
         filepath = args.filepath if args.filepath else EXAMPLE_PATH
         self.nonogram = FileReader.read_nonogram(filepath)
-        self.solver = Solver(self.nonogram)
+        self.solver = Solver()
         
     def solve(self) -> None:
-        self.solver.solve()
+        self.solver.solve(self.nonogram)

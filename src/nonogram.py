@@ -1,8 +1,8 @@
 BLANK = ' '
 PRINTING_SYMBOL_MAP = {
-    0 : ' ',
-    1 : '•',
-    2 : '█'
+    0 : '•',
+    1 : '█',
+    2 : ' '
 }
 
 """ class that represents the nonogram puzzle and its solution """
@@ -14,7 +14,7 @@ class Nonogram:
         max_row_value_len = max(max(len(str(row_element)) for row_element in row) for row in self.rows)
         max_col_value_len = max(max(len(str(col_element)) for col_element in column) for column in self.columns)
         self.max_value_len = max([max_row_value_len, max_col_value_len])
-        self.solution = [[0 for _ in range(self.width)] for _ in range(self.height)]
+        self.solution = [[2 for _ in range(self.width)] for _ in range(self.height)]
     
     def __str__(self) -> str:
         #this is disgusting, I know
