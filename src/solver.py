@@ -10,29 +10,20 @@ class Solver:
         possible_col_solutions = []
 
         for i, row in enumerate(nonogram.rows):
-            i_time = time.time()
             possible_row_solutions.append(self._get_vector_solutions_(row, nonogram.width))
-            print(f'preparing row solutions... {i+1}/{nonogram.height} [{time.time()-i_time:.4f} s]')
 
         for i, col in enumerate(nonogram.columns):
-            i_time = time.time()
             possible_col_solutions.append(self._get_vector_solutions_(col, nonogram.height))
-            print(f'preparing col solutions... {i+1}/{nonogram.width} [{time.time()-i_time:.4f} s]')
 
         iteration = 0
-        any_changes = True
-        while not self._is_nonogram_solved_(nonogram) or not any_changes:
+        while not self._is_nonogram_solved_(nonogram):
             for i in range(len(possible_row_solutions)):
-                i_time = time.time()
                 possible_row_solutions[i] = self._remove_invalid_vector_solutions_(possible_row_solutions[i], nonogram.solution[i], nonogram.width)
-                print(f'[{iteration}] [{time.time()-i_time:.4f} s], row solutions: {i+1}/{len(possible_row_solutions)} -> {len(possible_row_solutions[i])} potential solutions')
                 common_row = self._get_common_vector_solution_(possible_row_solutions[i], nonogram.width)
                 for j, item in enumerate(common_row):
                     if item != 2: nonogram.solution[i][j] = item
 
             for i in range(len(possible_col_solutions)):
-                i_time = time.time()
-                print(f'[{iteration}] [{time.time()-i_time:.4f} s], col solutions: {i+1}/{len(possible_col_solutions)} -> {len(possible_col_solutions[i])} potential solutions')
                 possible_col_solutions[i] = self._remove_invalid_vector_solutions_(possible_col_solutions[i], [item[i] for item in nonogram.solution], nonogram.height)
                 common_col = self._get_common_vector_solution_(possible_col_solutions[i], nonogram.height)
                 for j, item in enumerate(common_col):
@@ -50,12 +41,10 @@ class Solver:
         
         s_time = time.time()
         possible_binary_solutions = self._get_all_binary_repr_(actual_length, len(vector_values))
-        print(f'binary solution... [{time.time()-s_time:.4f} s]')
 
         s_time = time.time()
         for binary_solution in possible_binary_solutions:
             possible_solutions.append(self._convert_from_binary_solution_(binary_solution, vector_values))
-        print(f'translating solution... [{time.time()-s_time:.4f} s]')
 
         return possible_solutions
 
@@ -67,8 +56,7 @@ class Solver:
                 solution += '0'
             else:
                 if i > 0: solution += '0'
-                for j in range(vector_values[i]):
-                    solution += '1'
+                solution += '1'*vector_values[i]
                 i += 1
         return int(solution,2)
 
@@ -77,16 +65,13 @@ class Solver:
         for i, row in enumerate(nonogram.solution):
             validity = self._check_vector_validity_(row, nonogram.rows[i])
             if not validity:
-                print(f'validity check... [{time.time()-s_time:.4f} s]')
                 return False
             
         for i in range(nonogram.width):
             vector = [item[i] for item in nonogram.solution]
             validity = self._check_vector_validity_(vector, nonogram.columns[i])
             if not validity:
-                print(f'validity check... [{time.time()-s_time:.4f} s]')
                 return False
-        print(f'validity check... [{time.time()-s_time:.4f} s]')
         return True
         
     def _check_vector_validity_(self, vector: List[int], vector_values: List[int]) -> bool:
@@ -128,7 +113,6 @@ class Solver:
             if element == '1':
                 solution[i] = 0
         
-        print(f'common solution calculation... [{time.time()-s_time:.4f} s]')
         return solution
     
     def _remove_invalid_vector_solutions_(self, current_solutions: List[int], solution_vector: List[int], solution_length: int) -> List[List[int]]:
@@ -144,15 +128,30 @@ class Solver:
             if single_solution & solution_vector_ones == solution_vector_ones and (only_ones_int ^ single_solution) & solution_vector_zeroes == solution_vector_zeroes:
                 valid_solutions.append(single_solution)
 
-        print(f'removing invalid solution calculation... [{time.time()-s_time:.4f} s]')
         return valid_solutions
     
-    def _get_all_binary_repr_(self, length, ones):
+    def _get_all_binary_repr_(self, length: int, ones: int) -> List[str]:
         if length == 0:
             return []
-        elif (length==ones):
+        elif length == ones:
             return ['1' * length]
-        elif (ones==0):
+        elif ones == 0:
             return ['0' * length]
-        else: 
-            return ['1' + x for x in self._get_all_binary_repr_(length-1,ones-1)] + ['0' + x for x in self._get_all_binary_repr_(length-1,ones)]
+        
+        result = []
+        stack = [(length, ones, '')]
+        
+        while stack:
+            current_length, current_ones, current_string = stack.pop()
+            
+            if current_length == 0:
+                result.append(current_string)
+            elif current_length == current_ones:
+                result.append(current_string + '1' * current_length)
+            elif current_ones == 0:
+                result.append(current_string + '0' * current_length)
+            else:
+                stack.append((current_length - 1, current_ones - 1, current_string + '1'))
+                stack.append((current_length - 1, current_ones, current_string + '0'))
+        
+        return result
